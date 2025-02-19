@@ -5,7 +5,8 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     curl
 
-RUN mkdir -p /videos/info
+RUN mkdir -p /videos
+RUN mkdir -p /info
 
 COPY watch.sh /root/watch.sh
 RUN chmod +x /root/watch.sh
