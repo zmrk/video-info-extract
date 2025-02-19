@@ -15,10 +15,10 @@ inotifywait -m -e close_write -e moved_to -e delete -e moved_from --format '%w %
     # 파일 삭제 이벤트 처리
     if [[ "$event" == *"DELETE"* || "$event" == *"MOVED_FROM"* ]]; then
         echo "파일 삭제 감지: $filepath"
-        if [ -n "$POST_URL" ]; then
-            curl -X POST -H "Content-Type: application/json" \
+        if [ -n "$API_URL" ]; then
+            curl -X DELETE -H "Content-Type: application/json" \
                 -d "{\"filename\": \"${file}\"}" \
-                "$POST_URL"
+                "$API_URL"
         fi
 
     # 파일 생성/수정 이벤트 처리
@@ -54,11 +54,11 @@ inotifywait -m -e close_write -e moved_to -e delete -e moved_from --format '%w %
             echo "{\"duration\": $duration}" > "$json_path"
             echo "영상 길이: $duration 초 (저장파일: $json_path)"
 
-            # POST_URL이 설정되어 있다면 영상 처리 결과를 POST 전송
-            if [ -n "$POST_URL" ]; then
+            # API_URL이 설정되어 있다면 영상 처리 결과를 POST 전송
+            if [ -n "$API_URL" ]; then
                 curl -X POST -H "Content-Type: application/json" \
                     -d "{\"filename\": \"${file}\", \"thumbnail\": \"${thumb_path}\", \"duration\": $duration}" \
-                    "$POST_URL"
+                    "$API_URL"
             fi
         fi
     fi
