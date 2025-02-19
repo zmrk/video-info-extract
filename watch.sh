@@ -1,15 +1,10 @@
 #!/bin/bash
 
-# /videos/info 폴더가 없으면 생성
-mkdir -p /videos/info
+# /info 폴더가 없으면 생성
+mkdir -p /info
 
 # /videos 폴더의 이벤트를 지속적으로 모니터링
 inotifywait -m -e close_write -e moved_to -e delete -e moved_from --format '%w %e %f' /videos | while read -r dir event file; do
-    # /videos/info 폴더 내의 이벤트는 무시
-    if [[ "$dir" == "/videos/info/" ]]; then
-        continue
-    fi
-
     filepath="${dir}${file}"
 
     # 파일 삭제 이벤트 처리
@@ -28,8 +23,8 @@ inotifywait -m -e close_write -e moved_to -e delete -e moved_from --format '%w %
             echo "영상 처리 시작: $filepath"
             base_name="${file%.*}"
             timestamp=$(date +%s)
-            thumb_path="/videos/info/${base_name}_${timestamp}.png"
-            json_path="/videos/info/${base_name}_${timestamp}.json"
+            thumb_path="/info/${base_name}_${timestamp}.png"
+            json_path="/info/${base_name}_${timestamp}.json"
 
             # 1초 지점에서 썸네일 생성
             ffmpeg_output=$(ffmpeg -i "$filepath" -ss 00:00:01.000 -vframes 1 "$thumb_path" -y 2>&1)
