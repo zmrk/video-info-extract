@@ -10,4 +10,7 @@ RUN mkdir -p /videos/info
 COPY watch.sh /root/watch.sh
 RUN chmod +x /root/watch.sh
 
+ENV POST_URL=""
+VOLUME [ "/videos" ]
+
 CMD ["/root/watch.sh"]
