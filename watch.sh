@@ -1,7 +1,17 @@
 #!/bin/bash
+# 환경변수 설정 예제:
+# export API_URL="http://your-api-endpoint.com/api"
+# export COPY_DIRS="/backup/videos /archive/videos"
 
 # /info 폴더가 없으면 생성
 mkdir -p /info
+
+# 환경변수 COPY_DIRS에 명시된 디렉토리가 없으면 생성
+if [ -n "$COPY_DIRS" ]; then
+    for dir in $COPY_DIRS; do
+        mkdir -p "$dir"
+    done
+fi
 
 # /videos 폴더의 이벤트를 지속적으로 모니터링
 inotifywait -m -e close_write -e moved_to -e delete -e moved_from --format '%w %e %f' /videos | while read -r dir event file; do
@@ -10,6 +20,16 @@ inotifywait -m -e close_write -e moved_to -e delete -e moved_from --format '%w %
     # 파일 삭제 이벤트 처리
     if [[ "$event" == *"DELETE"* || "$event" == *"MOVED_FROM"* ]]; then
         echo "파일 삭제 감지: $filepath"
+        # 대상 디렉토리들에서 파일 삭제
+        if [ -n "$COPY_DIRS" ]; then
+            for target_dir in $COPY_DIRS; do
+                if [ -f "${target_dir}/${file}" ]; then
+                    rm -f "${target_dir}/${file}"
+                    echo "삭제 완료: ${target_dir}/${file}"
+                fi
+            done
+        fi
+        # API 호출 (DELETE)
         if [ -n "$API_URL" ]; then
             curl -X DELETE -H "Content-Type: application/json" \
                 -d "{\"filename\": \"${file}\"}" \
@@ -21,6 +41,15 @@ inotifywait -m -e close_write -e moved_to -e delete -e moved_from --format '%w %
         # mp4 파일만 처리
         if [[ "$file" =~ \.mp4$ ]]; then
             echo "영상 처리 시작: $filepath"
+            
+            # 업로드 시 대상 디렉토리들로 파일 복사
+            if [ -n "$COPY_DIRS" ]; then
+                for target_dir in $COPY_DIRS; do
+                    cp "$filepath" "$target_dir"
+                    echo "파일 복사 완료: ${target_dir}/${file}"
+                done
+            fi
+
             base_name="${file%.*}"
             timestamp=$(date +%s)
             thumb_path="/info/${base_name}_${timestamp}.png"
