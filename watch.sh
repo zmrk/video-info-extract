@@ -3,8 +3,8 @@
 # export API_URL="http://your-api-endpoint.com/api"
 # export COPY_DIRS="/backup/videos /archive/videos"
 
-# /info 폴더가 없으면 생성
-mkdir -p /info
+# /metadata 폴더가 없으면 생성
+mkdir -p /metadata
 
 # 환경변수 COPY_DIRS에 명시된 디렉토리가 없으면 생성
 if [ -n "$COPY_DIRS" ]; then
@@ -52,8 +52,8 @@ inotifywait -m -e close_write -e moved_to -e delete -e moved_from --format '%w %
 
             base_name="${file%.*}"
             timestamp=$(date +%s)
-            thumb_path="/info/${base_name}_${timestamp}.png"
-            json_path="/info/${base_name}_${timestamp}.json"
+            thumb_path="/metadata/${base_name}_${timestamp}.png"
+            json_path="/metadata/${base_name}_${timestamp}.json"
 
             # 1초 지점에서 썸네일 생성
             ffmpeg_output=$(ffmpeg -i "$filepath" -ss 00:00:01.000 -vframes 1 "$thumb_path" -y 2>&1)
